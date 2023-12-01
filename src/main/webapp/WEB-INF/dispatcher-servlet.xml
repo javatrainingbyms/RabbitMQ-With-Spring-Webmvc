@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context.xsd
+http://www.springframework.org/schema/mvc
+http://www.springframework.org/schema/mvc/spring-mvc.xsd
+http://www.springframework.org/schema/rabbit
+http://www.springframework.org/schema/rabbit/spring-rabbit.xsd">
+
+	<mvc:annotation-driven />
+	<context:annotation-config />
+	<context:component-scan	base-package="in.serosoft" />
+	
+	  
+	<rabbit:connection-factory id="connectionFactory" host="localhost" virtual-host="/" username="guest" password="guest"/>
+	<rabbit:admin connection-factory="connectionFactory" />
+	<rabbit:queue name="ms-queue-exam" durable="true"/>
+	<rabbit:queue name="ms-queue-admission" durable="true"/>
+	
+	<rabbit:direct-exchange name="ms-exchange" id="msExchange">
+		<rabbit:bindings>
+			<rabbit:binding queue="ms-queue-exam" key="exam"/>
+			<rabbit:binding queue="ms-queue-admission" key="admission"/>
+		</rabbit:bindings>
+	</rabbit:direct-exchange>
+	
+	<rabbit:template id="amqpTemplate" connection-factory="connectionFactory" exchange="ms-exchange"/>
+	
+	<rabbit:listener-container connection-factory="connectionFactory">
+        <rabbit:listener ref="myQueueListener" queue-names="my-queue" />
+        <rabbit:listener ref="yourQueueListener" queue-names="your-queue" />
+	</rabbit:listener-container>	
+	 
+	<!--   
+	<bean id="connectionFactory" class="org.springframework.amqp.rabbit.connection.CachingConnectionFactory">
+		<property name="host" value="localhost"/>
+		<property name="username" value="guest"/>
+		<property name="password" value="guest"/>
+	</bean>
+	<bean id="rabbitAdmin" class="org.springframework.amqp.rabbit.core.RabbitAdmin">
+		<constructor-arg ref="connectionFactory"/>
+	</bean>
+	<bean id="rabbitTemplate" class="org.springframework.amqp.rabbit.core.RabbitTemplate">
+		<constructor-arg ref="connectionFactory"/>
+	</bean>
+	<bean id="rabbitListenerContainerFactory" class="org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory">
+		<property name="connectionFactory" ref="connectionFactory"/>
+	</bean>
+	<bean id="myExchange" class="org.springframework.amqp.core.DirectExchange">
+		<constructor-arg value="my-exchange"/>
+	</bean>
+	<bean id="myQueue" class="org.springframework.amqp.core.Queue">
+		<constructor-arg value="my-queue"/>
+	</bean>
+		<bean id="yourQueue" class="org.springframework.amqp.core.Queue">
+		<constructor-arg value="your-queue"/>
+	</bean>
+	
+	<bean id="bindingMy" class="org.springframework.amqp.core.Binding">
+		<constructor-arg value="my-queue"/>
+		<constructor-arg ref="destinationType"/>
+		<constructor-arg value="my-exchange"/>
+		<constructor-arg value="my"/>
+		<constructor-arg><null/></constructor-arg>
+	</bean>
+	<bean id="bindingYour" class="org.springframework.amqp.core.Binding">
+		<constructor-arg value="your-queue"/>
+		<constructor-arg ref="destinationType"/>
+		<constructor-arg value="my-exchange"/>
+		<constructor-arg value="your"/>
+		<constructor-arg><null/></constructor-arg>
+	</bean>
+	<bean id="destinationType" class="org.springframework.amqp.core.Binding.DestinationType" factory-method="valueOf">
+     <constructor-arg>
+         <value>QUEUE</value>
+     </constructor-arg>
+ </bean>
+ -->
+</beans>
